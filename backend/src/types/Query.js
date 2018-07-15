@@ -6,29 +6,25 @@ const {
     GraphQLList
 } = require("graphql");
 
-const Post = require("./Post");
+const {
+    connectionArgs,
+    connectionFromPromisedArray
+} = require("graphql-relay");
+
+const { nodeField } = require("../interfaces/Node");
+const { Post, PostConnection } = require("./Post");
 const PostModel = require("../model/Post");
 
 const Query = new GraphQLObjectType({
     name: "Query",
     descipriton: "Query interface for our blog",
     fields: {
-        post: {
-            type: Post,
-            description: "Query to get a single post by its ID", 
-            args: {
-                id : { type: new GraphQLNonNull(GraphQLID)}
-            },
-            resolve: (_, args) => {
-                return PostModel.getPost(args.id);
-            }
-        } , 
+        node : nodeField, 
         posts: {
-            type: new GraphQLList(Post),
-            description: "Query to get all posts" ,
-            args: {},
+            type: PostConnection,
+            args: connectionArgs,
             resolve: (_, args) => {
-                return PostModel.getPosts();
+                connectionFromPromisedArray(PostModel.getPosts(), args);
             }
         }  
     }
